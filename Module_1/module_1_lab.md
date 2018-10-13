@@ -20,7 +20,10 @@ So there are a bunch of steps to go through here. Instead of going through and d
 Obviously just having a virtual machine isn't enough; we also need an image to form our OS. For this project we will be using a linux distribution known as [ubuntu](https://www.ubuntu.com/)- which is used all the time and works well with GoLang. Let's download the image for the ubuntu server [here](https://www.ubuntu.com/download/desktop). Once you have that iso image downloaded (we are looking for the **ubuntu server** and not **ubuntu desktop**) we need to load it into our VM Fusion machine. Open up vmware fusion until you get to this screen:
 ![vmimage](./images/new-vm-step-1.png)
 
-Now go to your downloads folder, grab the iso image that you just downloaded, and drag it into the appropriate vmware area. Now wait about a minute for everything to boot up.
+Now go to your downloads folder, grab the iso image that you just downloaded, and drag it into the appropriate vmware area. Now wait about a ten minutes for everything to boot up.
+When this step completes you should see a screen that looks something like this:
+
+![home](./images/ubuntuHomescreen.png)
 
 ### Step four: Set up your ubuntu machine
 
@@ -45,9 +48,22 @@ At this point you should see a screen that looks something like this:
 
 ![homeimage](./images/ubuntu1804.jpg)
 
+Now let's log in and get the cli up- which is the primary thing we'll be working with. Log in using the login that you set up  in the previous step. Once logged in you should have a basic ubuntu screen ready to go. If you want to- take a minute to familiarize yourself (that rhythymbox thing is kind of cool...I guess). 
+We'll be working primarily with the cli going forward so the next step is to do a `cmd-alt-t` to call up the terminal shell. This should look like pretty much every other terminal:
+
+![terminal](./images/terminalubuntu.png)
+
 So now we have a **cli** (command-line-interface) ready to go. This is the primary way we'll interface with our ubuntu machine. The first thing we're going to want to do is make sure that we have an effective internet connection and the ability to download the packages we need. Please run the following commands:
 
 * `ping www.google.com` - you should get something back that says __64 bytes from .... icmp_seq=1 ttl=128__ which is basically google returning your "ping". CONGRATULATIONS- you're connected to the internet.
-*   
 
-Okay- now that we're completely set up let's download all necessary software packages. Ubuntu, by default, uses [apt-get](http://manpages.ubuntu.com/manpages/bionic/man8/apt-get.8.html) to manage packages. The first thing we always want to do when we create a new virtual machine is to run an update and and upgrade. Fortunately on the command
+
+Okay- now that we're completely set up let's download all necessary software packages. Ubuntu, by default, uses [apt-get](http://manpages.ubuntu.com/manpages/bionic/man8/apt-get.8.html) to manage packages. The first thing we always want to do when we create a new virtual machine is to run an update and and upgrade. Fortunately on the command line this is super easy to do. Run the following command:
+`sudo apt-get update && sudo apt-get upgrade`
+The **sudo** gives you **root** user permissions to update and upgrade. 
+Grab a coffee- this will take a few minutes to run. 
+
+### Step seven: install goLang
+
+Okay- we're ready to install goLang itself! To do this step we will again go with the ubuntu package manager...which makes this really easy:
+`sudo apt-get install golang` is the only command we need for this part. Now the packages should download.
