@@ -17,6 +17,7 @@ So there are a bunch of steps to go through here. Instead of going through and d
 ### Step Three: Getting the image
 
 ![ubuntu](./images/ubuntuimg.jpg)
+
 Obviously just having a virtual machine isn't enough; we also need an image to form our OS. For this project we will be using a linux distribution known as [ubuntu](https://www.ubuntu.com/)- which is used all the time and works well with GoLang. Let's download the image for the ubuntu server [here](https://www.ubuntu.com/download/desktop). Once you have that iso image downloaded (we are looking for the **ubuntu server** and not **ubuntu desktop**) we need to load it into our VM Fusion machine. Open up vmware fusion until you get to this screen:
 ![vmimage](./images/new-vm-step-1.png)
 
@@ -63,7 +64,41 @@ Okay- now that we're completely set up let's download all necessary software pac
 The **sudo** gives you **root** user permissions to update and upgrade. 
 Grab a coffee- this will take a few minutes to run. 
 
-### Step seven: install goLang
+### Step seven: mount the pre-set up golang structure:
+
+To **mount** a folder in a vmware fusion machine basically means that we can access files on the host through the vmware machine. To do this we want to use the **file sharing** functionality in our vmware machine. So to mount:
+
+1. Navigate to the **Virtual Machine** drop down on the top row of the host machine (when vmware is selected)
+2. Select the **Shared settings...** selection. A pop up will appear asking what folders you want to mount.
+3. Click the "+" sign and you will be able to navigate to the correct folder on your host. That correct folder should be the "go" folder two levels up from this lab instruction (the root directory for this repo).
+4. The permissions should be read/write
+5. Now we need to check that this worked...open up a terminal (`ctrl-alt-t`) and use the following command to navigate to the section of the virtual machine that the mounted files go to- which is the __/mnt/hgfs__ (mount/host-group-file-service is what that stands for..I think). 
+6. To get there type the following command into your terminal: `cd /mnt/hgfs && ls` (change-directory to... and then list the files there). You should see a simple directory in there that says **go**. This is where we will be doing most of our work! 
+
+![shared](./images/mountedselection.png)
+
+### Step eight: install goLang
 
 Okay- we're ready to install goLang itself! To do this step we will again go with the ubuntu package manager...which makes this really easy:
-`sudo apt-get install golang` is the only command we need for this part. Now the packages should download.
+`sudo apt-get install golang` is the only command we need for this part. Now the packages should download. Grab another coffee (you caffienated enough yet?!?)
+
+So another note: Golang depends heavily on the **GOPATH** variable- which we have to set in our environment. We need this **GOPATH** variable to point to the directory that we will be working with golang in. The simple way to set this is to run the `export GOPATH='/mnt/hgfs'` BUT...that will only allow that environment variable to exist until we shut the computer down.
+We want this to be there every time. 
+By default the GOPATH variable was set to **/$HOME/go/** but, of course...we're using mounted files so that won't work for us. 
+**INSTEAD** we're going to add this command to our **~/.bash_profile** which is a nifty little file that is read every time we start up a shell terminal (we can do all sorts of neat thing with this file like add **alias'** or change our screen colour scheme!)
+
+Type in the following command: `vi ~/.bash_profile` This should open up a blank text editor. Type the `i` key for **INSERT**. An INSERT should come up at the bottom of the screen. Write the following into the text editor:
+`export GOPATH='/mnt/hgfs/go'`. Save and close the text editor by typing `esc` then `:wq`. This should close the text editor. 
+
+### Step nine: Test our installation of go
+
+So I have included a **test** folder in the __go/__ directory. Let's run a quick test to make sure our installation works:
+
+1. Change directories to our go folder: `cd /mnt/hgfs/go/src/test/`
+2. Run a **build** command against the **test.go** file in there by running `go build` from within that directory.
+3. Run an `ls`. Did a new file called **test** appear (without the **.go** extension added to the end of it?) THIS is one of the most powerful features of GO that we'll get in to in the lecture portion (it's the binary). Let's run it...
+4. Type in `./test`. Did a message appear on your screen? 
+5. Now let's clean up by putting this bad boy into our **/bin** folder (binary files go here) by typing in `go install`. Did the file disappear? Check the bin file!
+
+### Step ten: Finish up! 
+Congratulations! We are ready to proceed with our golang project!
