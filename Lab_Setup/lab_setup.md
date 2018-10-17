@@ -88,7 +88,10 @@ By default the GOPATH variable was set to **/$HOME/go/** but, of course...we're 
 **INSTEAD** we're going to add this command to our **~/.bash_profile** which is a nifty little file that is read every time we start up a shell terminal (we can do all sorts of neat thing with this file like add **alias'** or change our screen colour scheme!)
 
 Type in the following command: `vi ~/.bash_profile` This should open up a blank text editor. Type the `i` key for **INSERT**. An INSERT should come up at the bottom of the screen. Write the following into the text editor:
-`export GOPATH='/mnt/hgfs/go'`. Save and close the text editor by typing `esc` then `:wq`. This should close the text editor. 
+`export GOPATH='/mnt/hgfs/go'`. 
+Now we also need to get everything from GO's binary to be available to us on the command line by appending to the **$PATH** variable...so let's add the binary folder from __go__ to that by adding another line to the __bash_profile__ and typing `export PATH=$PATH:$GOPATH/bin` into that new line.
+
+Save and close the text editor by typing `esc` then `:wq`. This should close the text editor. 
 
 ### Step nine: Test our installation of go
 
