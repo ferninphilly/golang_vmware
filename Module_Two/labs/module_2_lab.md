@@ -477,3 +477,115 @@ func Multiply(a,b int) int {
     return a * b
 }
 ```
+
+## GO Data structures
+
+### In this section we will be using the playground. Put the following code in your main section:
+
+1. Initialize an array of 5 integers: `var a [5]int`
+
+2. Print it: `fmt.Println("emp:", a)`
+
+3. Set the fourth integer to 100: `a[4] = 100`
+
+4. Print it: `fmt.Println("set:", a)`
+
+5. Print just the fifth index: `fmt.Println("get",a[4])`
+
+6. LEN is a built in function that gives you the full length of the array: `fmt.Println("len:",len(a))`
+
+7. Declare and initialize an array in a single line: `b := [5]int{2,4,6,8,10}`
+
+8. Print it: `fmt.Println("Here is b:",b)`
+
+9. You can also declar multi-dimensional arrays: `var multiD [5][4]int` will build an 5 arrays of 4 indexes each:
+
+```go
+func make2Darray() [5][4]int {
+   for i := 0; i < 2; i++ {
+        for j := 0; j < 3; j++ {
+            multiD[i][j] = i + j
+        }
+    }
+    return multiD
+}
+//Now print it!
+```
+
+10. Now let's create array **slices**. Add the following to your main function:
+
+```go
+
+package main
+
+import "fmt"
+
+var chars = []string{ "Torgo", "Master", "Debbie", "Michael", "Margaret"}
+
+func manosHandsChars (famArr []string) ([]string,[]string) {
+    family := famArr[2:5]
+    badguys := famArr[0:2]
+    return family, badguys
+}
+func main() {
+    good, evil := manosHandsChars(chars)
+    fmt.Println("The good guys are:",good)
+    fmt.Println("The bad guys are:", evil)
+
+}
+```
+
+11. Array referencing:
+
+```go
+package main
+import "fmt"
+
+func main() {
+    a := [7]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+
+    slice1 := a[1:]
+    slice2 := a[3:]
+
+    fmt.Println("------- Before Modifications -------")
+    fmt.Println("a  = ", a)
+    fmt.Println("slice1 = ", slice1)
+    fmt.Println("slice2 = ", slice2)
+
+    slice1[0] = "TUE"
+    slice1[1] = "WED"
+    slice1[2] = "THU"
+    slice2[1] = "FRIDAY"
+    fmt.Println("\n-------- After Modifications --------")
+    fmt.Println("a  = ", a)
+    fmt.Println("slice1 = ", slice1)
+    fmt.Println("slice2 = ", slice2)
+}
+```
+
+11. So here's how we **make** slices:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+a := make([]int, 5)
+    printSlice("a", a)
+    
+    b := make([]int, 0, 5)
+    printSlice("b", b)
+
+    c := b[:2]
+    printSlice("c", c)
+
+    d := c[2:5]
+    printSlice("d", d)
+}
+
+func printSlice(s string, x []int) {
+    fmt.Printf("%s len=%d cap=%d %v\n",
+    s, len(x), cap(x), x)
+}
+```
