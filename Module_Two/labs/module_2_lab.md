@@ -281,3 +281,175 @@ func main() {
 }
 ```
 
+6. Initializing function:
+
+```go
+package main
+
+import "fmt"
+
+//Note that the variable is initialized here
+var GreatestMovieEver string
+
+func init() {
+    fmt.Println("Torgo says:")
+    // And now I can just use a straight "=" sign...
+    GreatestMovieEver = "Manos: the Hands of Fate"
+}
+
+func main() {
+    fmt.Printf("The greatest movie of all time is: %s\n", GreatestMovieEver)
+}
+```
+
+7. Recursion- create the factorial:
+
+```go
+package main
+
+import "fmt"
+
+func factorial(x uint) uint {
+  if x == 0 {
+    return 1
+  }
+  return x * factorial(x-1)
+}
+
+func main() {
+    fmt.Println(factorial(5))
+}
+
+```
+
+### Built in functions
+
+Let's do this next section in our virtual machine as the best ways to show you examples of panicking is to write our own routines. So switch to your vms and go to your **mnt/** folder.
+__Bonus question__: Where should we put this code?
+
+1. Defer and panic (note the way that we use panic and defer here)
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    f := createFile("/mnt/hgfs/go/src/cmd/deleteme.txt")
+    defer closeFile(f)
+    writeFile(f)
+}
+
+func createFile(p string) *os.File {
+    fmt.Println("creating...")
+    f, err := os.Create(p)
+    if err != nil {
+        panic(err)
+    }
+    return f
+}
+
+func writeFile(f *os.File) {
+    fmt.Println("writing")
+    fmt.Fprintln(f, "Put the bunny back in the box...I said: Put the bunny back in the box...Why couldn't you put the bunny back in the box?")
+}
+
+func closeFile(f *os.File) {
+    fmt.Println("closing")
+    f.Close()
+}
+```
+
+2. Recover():
+
+```go
+package main
+import "fmt"
+
+func say(text string) {
+      fmt.Println(text)
+}
+
+func createAPanic() {
+    i := 32/0//HERE IS THE PANIC!! OMG!!!
+    fmt.Println("This should not be reached: %s", i)
+}
+
+func rescue()
+    r := recover()
+    if r != nil {
+        fmt.Println("Panic is being recovered!")
+    }
+```
+
+3. Now examine each of these snippets and try them. Why are they working/not working?
+
+```go
+//First snippet:
+func main() {
+    // An amazing app starts here
+    say("I Deed not heet her, I did naaaaht...")
+    firePanic()
+    say("Oh, Hi Mark!")
+ // At the end of main, call rescue function
+    rescue()
+ }
+
+ //Second snippet:
+func main() {
+ // An amazing app starts here
+    say("I Deed not heet her, I did naaaaht...")
+    firePanic()
+    say("Oh, Hi Mark!")
+// At the end of main, call rescue function
+      defer rescue()
+}
+
+//Third snippet:
+
+func main() {
+    // At the end of main, call rescue function
+    defer rescue()
+    // An amazing app starts here
+    say("I Deed not heet her, I did naaaaht...")
+    firePanic()
+    say("Oh, Hi Mark")
+}
+```
+
+### Calling functions in Golang:
+
+```go
+package main
+
+import "fmt"
+
+//Declare the type here
+type ArithOp func(int, int)int
+
+func main() {
+    calculate(Plus)
+    calculate(Minus)
+    calculate(Multiply)
+}
+
+func calculate(fp func(int, int)int) {
+    ans := fp(3,2)
+    fmt.Printf("\n%v\n", ans) 
+}
+
+func Plus(a, b int) int {
+    return a + b
+}
+
+func Minus(a, b int) int {
+    return a - b
+}
+
+func Multiply(a,b int) int {
+    return a * b
+}
+```
