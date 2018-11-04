@@ -420,6 +420,30 @@ func main() {
 }
 ```
 
+3. Now that we have this folder structure set up let's see if we can get the error handling set up. Append to the code from step 1 of this section:
+
+```go
+import(
+    "io/ioutil"
+)
+
+func readBack() string {
+    dat, err := ioutil.ReadFile("/mnt/hgfs/go/src/cmd/deleteme.txt")
+    return string(dat)
+}
+
+func main() {
+    f := createFile("/mnt/hgfs/go/src/cmd/deleteme.txt")
+    defer closeFile(f)
+    writeFile(f)
+    response := readBack()
+    fmt.Printf("What does Cameron Poe say to bad guys who take his bunny?\n\n %s", response)
+}
+```
+
+**Question:** Now that we are in our vm- how do we call this function that we just built??
+
+
 ### Calling functions in Golang:
 
 ```go
