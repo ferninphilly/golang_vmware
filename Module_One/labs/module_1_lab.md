@@ -36,9 +36,9 @@
 
 2. Run `go get github.com/kr/pretty`. Where did it put the package? 
 
-3. So now that we have an understanding of how this works...let's see how to actually __use__ this wonderful package that we've just downloaded! So to do that we need to create a **main.go** folder.
+3. So now that we have an understanding of how this works...let's see how to actually __use__ this wonderful package that we've just downloaded! So to do that we need to create a **main.go** file.
 
-4. Where does the **main.go** folder go? (hint: `cd /mnt/hgfs/go/src/golang_practice/cmd && touch main.go`)
+4. Where does the **main.go** file go? (hint: `cd /mnt/hgfs/go/src/golang_practice/cmd && touch main.go`)
 
 5. Now switch over to your preferred coding gui on your host system and open **main.go**. Put the following in to the first line of that file: `package main`
 
