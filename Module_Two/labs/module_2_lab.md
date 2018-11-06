@@ -589,3 +589,173 @@ func printSlice(s string, x []int) {
     s, len(x), cap(x), x)
 }
 ```
+
+12. So let's create some maps:
+
+```go
+
+// This won't work: 
+var m map[string]int
+
+m["Fern"] = 42;
+// Why not? 
+```
+
+13. So let's **make** some maps and start putting some data into them:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+
+    // To create an empty map, use the builtin `make`:
+    // `make(map[key-type]val-type)`.
+    swbq := make(map[int]string) //Star Wars By Quality
+
+    // Set key/value pairs using typical `name[key] = val`
+    // syntax.
+    swbq[1] = "The Empire Strikes Back"
+    swbq[2] = "A New Hope"
+    swbq[3] = "Return of the Jedi"
+    swbq[4] = "The Force Awakens"
+    swbq[5] = "The Last Jedi"
+    swbq[10000] = "Any of the prequels"
+
+    fmt.Println("Star Wars Movies listed by quality:", swbq)
+
+    // Get a value for a key with `name[key]`.
+    iAmyourFather := swbq[1]
+    fmt.Println("Vader: ", iAmyourFather)
+    fmt.Println("len:", len(swbq))
+
+    // The builtin `delete` removes key/value pairs from
+    // a map.
+    delete(swbq, 10000)
+    fmt.Println("map:", swbq)
+
+    // The optional second return value when getting a
+    // value from a map indicates if the key was present
+    // in the map. This can be used to disambiguate
+    // between missing keys and keys with zero values
+    // like `0` or `""`.
+    wasitthere, prs := swbq[2]
+    fmt.Println("Was it there?",wasitthere)
+    fmt.Println("prs:", prs)
+
+
+    // You can also declare and initialize a new map in
+    // the same line with this syntax.
+    n := map[string]string{"Han Solo": "Good", "Ewoks": "Terrible"}
+    fmt.Println("map:", n)
+}
+
+```
+
+14. Structs:
+
+```go
+package main
+
+import "fmt"
+
+type Circle struct {
+  x,y,r float64
+}
+
+var c Circle //We can declare a circle this way as well
+
+func main() {
+    c := new(Circle) //Kinda neat how we can do that!
+    b := Circle{x: 0, y: 0, r: 5} //We can EXPLICITLY declare values OR
+    d := Circle{0, 0, 5} //IMPLICITLY declare them (but seriously- Explicit > implicit)
+    fmt.Println(c.x, c.y, c.r)
+    //we can change values (though there is some complication here- we'll talk about pointers later)
+    c.x = 10
+    c.y = 5
+    c.r = 100
+    fmt.Println(c.x, c.y, c.r)
+    fmt.Println(d.x, d.y, d.r)
+    fmt.Println(b.x, b.y, b.r)
+}
+
+```
+
+15. Methods on structs:
+
+```go
+package main
+
+import "fmt"
+
+type Rectangle struct {
+    length, width int
+}
+
+// r is the receiver for struct RECTANGLE
+func (r Rectangle) Area() int {
+    return r.length * r.width
+}
+
+//See where we put the receiver here?
+func (r Rectangle) Perimeter() int {
+    return 2* (r.length + r.width)
+}
+
+func main() {
+    r1 := Rectangle{4, 3}
+    fmt.Println("Rectangle is: ", r1)
+    fmt.Println("Rectangle area is: ", r1.Area())
+    fmt.Println("Rectangle perimeter is: ", r1.Perimeter())
+}
+```
+
+16. Interfaces and how they work- see the abstraction layer here?
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+type Animal interface {
+    Speak() string
+}
+
+type Dog struct {
+}
+
+func (d Dog) Speak() string {
+    return "Woof!"
+}
+
+type Cat struct {
+}
+
+func (c Cat) Speak() string {
+    return "Meow!"
+}
+
+type Llama struct {
+}
+
+func (l Llama) Speak() string {
+    return "?????"
+}
+
+type JavaProgrammer struct {
+}
+
+func (j JavaProgrammer) Speak() string {
+    return "Design patterns!"
+}
+
+func main() {
+    animals := []Animal{Dog{}, Cat{}, Llama{}, JavaProgrammer{}}
+    for _, animal := range animals {
+        fmt.Println(animal.Speak())
+    }
+}
+```
