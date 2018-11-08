@@ -759,3 +759,28 @@ func main() {
     }
 }
 ```
+
+17. Type assertions with interfaces:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    var i interface{} = "hello"
+
+    s := i.(string)
+    fmt.Println(s)
+
+    s, ok := i.(string)
+    fmt.Println(s, ok)
+
+    f, ok := i.(float64)
+    fmt.Println(f, ok)
+
+    //Why do you suppose this one PANICS and the previous one DID NOT???
+    f = i.(float64) // panic
+    fmt.Println(f)
+}
+```
