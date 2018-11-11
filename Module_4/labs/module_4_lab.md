@@ -351,7 +351,9 @@ func main() {
     ch := make(chan string)
     go process(ch)
     for {
-        time.Sleep(1000 * time.Millisecond)
+        time.Sleep(1000 * time.Millisecond) 
+        /* So here we are creating an infinite loop that will run every second...and then perform a select statement. Because the function takes 10500 milliseconds it will not initially run. 
+        So this will run 10.5 times before they sync up (10.5 seconds). */
         select {
         case v := <-ch:
             fmt.Println("BANG!! CRASH!!.... ", v)
@@ -364,7 +366,40 @@ func main() {
 }
 ```
 
-13. Buffered channels- simple example that works:
+13. Random select- these will run and output a random value:
+
+```go
+package main
+
+import (  
+    "fmt"
+    "time"
+)
+
+func server1(ch chan string) {  
+    ch <- "Iron Man Dies"
+}
+func server2(ch chan string) {  
+    ch <- "Captain America Dies"
+
+}
+func main() {  
+    output1 := make(chan string)
+    output2 := make(chan string)
+    go server1(output1)
+    go server2(output2)
+    time.Sleep(1 * time.Second)
+    select {
+    case s1 := <-output1:
+        fmt.Println(s1)
+    case s2 := <-output2:
+        fmt.Println(s2)
+    }
+}
+
+```
+
+14. Buffered channels- simple example that works:
 
 ```go
 package main
@@ -384,7 +419,7 @@ func main() {
 
 ```
 
-14. Let's take a close look at this one:
+15. Let's take a close look at this one:
 
 ```go
 package main
@@ -413,7 +448,7 @@ func main() {
 }
 ```
 
-15. Capacity and lengths of channels:
+16. Capacity and lengths of channels:
 
 ```go
 package main
@@ -435,7 +470,7 @@ func main() {
 
 ```
 
-16. WaitGroups struct types:
+17. WaitGroups struct types:
 
 ```go
 package main
@@ -467,7 +502,47 @@ func main() {
 }
 ```
 
-17. Worker Pools- step by step. FIRST- create two structs:
+18. Basic worker pools:
+
+```go
+// In this example we'll look at how to implement
+// a _worker pool_ using goroutines and channels.
+
+package main
+
+import "fmt"
+import "time"
+
+// Here's the worker, of which we'll run several
+// concurrent instances. These workers will receive
+// work on the `jobs` channel and send the corresponding
+// results on `results`. We'll sleep a second per job to
+// simulate an expensive task.
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        fmt.Println("worker", id, "started  job", j)
+        time.Sleep(time.Second)
+        fmt.Println("worker", id, "finished job", j)
+        results <- j * 2
+    }
+}
+
+func main() {
+
+    // In order to use our pool of workers we need to send
+    // them work and collect their results. We make 2
+    // channels for this.
+    jobs := make(chan int, 100)
+    results := make(chan int, 100)
+
+    // This starts up 3 workers, initially blocked
+    // because there are no jobs yet.
+    for w := 1; w <= 3; w++ {
+        go worker(w, jobs, results)
+    }
+```
+
+18. Worker Pools- step by step. FIRST- create two structs:
 
 ```go
 type Job struct {  
@@ -493,14 +568,14 @@ Just make a new struct!
 */
 ```
 
-18. Now we're going to create our channels that will write to these structs. Remember how we stated that channels could be of __any type__? Well...
+19. Now we're going to create our channels that will write to these structs. Remember how we stated that channels could be of __any type__? Well...
 
 ```go
 var jobs = make(chan Job, 10)  
 var results = make(chan Result, 10)  
 ```
 
-19. Now we're going to create the function that actually **does** a thing. If you want to take the time to understand it- by all means! But really- this could be __literally anything__- from an abstraction point just consider that this is a function that does-a-thing:
+20. Now we're going to create the function that actually **does** a thing. If you want to take the time to understand it- by all means! But really- this could be __literally anything__- from an abstraction point just consider that this is a function that does-a-thing:
 
 ```go
 func digits(number int) int {  
@@ -516,7 +591,7 @@ func digits(number int) int {
 }
 ```
 
-20. NOW- back to this- let's write a function that creates a goRoutine. So what's going on here? 
+21. NOW- back to this- let's write a function that creates a goRoutine. So what's going on here? 
 
 ```go
 func worker(wg *sync.WaitGroup) {  
@@ -530,7 +605,7 @@ func worker(wg *sync.WaitGroup) {
 
 We're creating a WaitGroup....and saying: okay- the worker is going to take the waitgroup as an input, then range through all of the **jobs** in the **jobs** channel (defined above to be length 10). The output will be written to the **results** channel as type RESULT (the name of the struct). You see- **digits** is the task that the worker is __actually__ performing.
 
-21. The next thing we want to do is create a **worker pool** (that group of eager, waiting workers waiting for tasks):
+22. The next thing we want to do is create a **worker pool** (that group of eager, waiting workers waiting for tasks):
 
 ```go
 func createWorkerPool(noOfWorkers int) {  
@@ -546,7 +621,7 @@ func createWorkerPool(noOfWorkers int) {
 
 So what we're doing here is taking the number of workers that we want to create as a parameter. It will call on the workgroup to ADD 1 **before** creating the goRoutine to add to the waitgroup counter. Finally it calls **wg.Wait()** to allow all of the workers to be created. Once this is done it **closes** the results channel as nothing else will need to be written there.
 
-22. Okay! So we've craeted our worker pool. Now we need to allocate jobs to each of our workers:
+23. Okay! So we've craeted our worker pool. Now we need to allocate jobs to each of our workers:
 
 ```go
 func allocate(noOfJobs int) {  
@@ -561,7 +636,7 @@ func allocate(noOfJobs int) {
 
 SO- the **allocate** function takes the number of jobs we want to create as the input parameter and assigns a random number (up to 998). It then takes a job struct with the job number and random number and assigns it to the **jobs** channel...it then closes the jobs channel after assigning all jobs.
 
-23. Finally we want to create a **result** function that basically just prints the output from the **results** channel. To use this we're going to create a function that takes another channel with a BOOLEAN type in and writes to that:
+24. Finally we want to create a **result** function that basically just prints the output from the **results** channel. To use this we're going to create a function that takes another channel with a BOOLEAN type in and writes to that:
 
 ```go
 func result(done chan bool) {  
@@ -572,7 +647,7 @@ func result(done chan bool) {
 }
 ```
 
-24. Finally we are going to create our **main** function measuring time:
+25. Finally we are going to create our **main** function measuring time:
 
 ```go
 func main() {  
@@ -592,4 +667,83 @@ func main() {
 
 Okay- so we start the execution time and then calculate total time taken...then display. We set the number of jobs to 100 and allocate them. We then assign 10 workers to teh process, finish the process, and print out the time. Put all of these into your main package then run it. Check out the time!!
 
-25. NOW- switch from 10 to 20 workers. Run again and take a look at the time. What happened? 
+26. NOW- switch from 10 to 20 workers. Run again and take a look at the time. What happened? 
+
+27. Let's create a program with a race condition. **Please note here: you need to run this program on your local machine. Please DO NOT try to run this in the go playground as that is deterministic. Run locally!**
+
+```go
+package main  
+import (  
+    "fmt"
+    "sync"
+    )
+var x  = 0  
+func increment(wg *sync.WaitGroup) {  
+    x = x + 1
+    wg.Done()
+}
+func main() {  
+    var w sync.WaitGroup
+    for i := 0; i < 1000; i++ {
+        w.Add(1)        
+        go increment(&w)
+    }
+    w.Wait()
+    fmt.Println("final value of x", x)
+}
+```
+
+28. Now let's fix the race condition using a mutex (imagine that "x" here is database and you want to make sure that you don't have multiple inserts and updates happening simultaneously):
+
+```go
+package main  
+import (  
+    "fmt"
+    "sync"
+    )
+var x  = 0  
+func increment(wg *sync.WaitGroup, m *sync.Mutex) {  
+    m.Lock()
+    x = x + 1
+    m.Unlock()
+    wg.Done()   
+}
+func main() {  
+    var w sync.WaitGroup
+    var m sync.Mutex
+    for i := 0; i < 1000; i++ {
+        w.Add(1)        
+        go increment(&w, &m) //It's essential to pass the address of the mutex so that you don't generate a thousand copies of the mutex- which will cause the race condition to still occur.
+    }
+    w.Wait()
+    fmt.Println("final value of x", x)
+}
+```
+
+29. Now let's look at how to solve this issue with a channel instead:
+
+```go
+package main  
+import (  
+    "fmt"
+    "sync"
+    )
+var x  = 0  
+func increment(wg *sync.WaitGroup, ch chan bool) {  
+    ch <- true
+    x = x + 1
+    <- ch
+    wg.Done()   
+}
+func main() {  
+    var w sync.WaitGroup
+    ch := make(chan bool, 1) //BECAUSE this is a channel with a buffer of ONE- so it will BLOCK ALL OTHER GOROUTINES TRYING TO WRITE TO THE CHANNEL.
+    //Now follow that logic through- all other goroutines are stopped until the channel empties...SO- only one goRoutine can work at a time.
+    for i := 0; i < 1000; i++ {
+        w.Add(1)        
+        go increment(&w, ch)
+    }
+    w.Wait()
+    fmt.Println("final value of x", x)
+}
+```
