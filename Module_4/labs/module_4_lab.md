@@ -256,7 +256,62 @@ func main() {
 }
 ```
 
-10. Select statement example:
+10. A better example: relay race:
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    // Create an unbuffered channel
+    baton := make(chan int)
+
+    // First runner to his mark
+    go Runner(baton)
+
+    // Start the race
+    baton <- 1
+
+    // Give the runners time to race
+    time.Sleep(500 * time.Millisecond)
+}
+
+func Runner(baton chan int) {
+    var newRunner int
+
+    // Wait to receive the baton
+    runner := <-baton
+
+    // Start running around the track
+    fmt.Printf("Runner %d Running With Baton\n", runner)
+
+    // New runner to the line
+    if runner != 4 {
+        newRunner = runner + 1
+        fmt.Printf("Runner %d To The Line\n", newRunner)
+        go Runner(baton)
+    }
+
+    // Running around the track
+    time.Sleep(100 * time.Millisecond)
+
+    // Is the race over
+    if runner == 4 {
+        fmt.Printf("Runner %d Finished, Race Over\n", runner)
+        return
+    }
+
+    // Exchange the baton for the next runner
+    fmt.Printf("Runner %d Exchange With Runner %d\n", runner, newRunner)
+    baton <- newRunner
+}
+```
+
+11. Select statement example:
 
 ```go
 // Go's _select_ lets you wait on multiple channel
@@ -299,7 +354,7 @@ func main() {
 }
 ```
 
-11. Select part 2: Which one will be printed out? WHY did it run like this? 
+12. Select part 2: Which one will be printed out? WHY did it run like this? 
 
 ```go
 package main
@@ -332,7 +387,7 @@ func main() {
 }
 ```
 
-12. SELECT with default:
+13. SELECT with default:
 
 ```go
 package main
@@ -366,7 +421,7 @@ func main() {
 }
 ```
 
-13. Random select- these will run and output a random value:
+14. Random select- these will run and output a random value:
 
 ```go
 package main
@@ -399,7 +454,7 @@ func main() {
 
 ```
 
-14. Buffered channels- simple example that works:
+15. Buffered channels- simple example that works:
 
 ```go
 package main
@@ -419,7 +474,7 @@ func main() {
 
 ```
 
-15. Let's take a close look at this one:
+16. Let's take a close look at this one:
 
 ```go
 package main
@@ -448,7 +503,7 @@ func main() {
 }
 ```
 
-16. Capacity and lengths of channels:
+17. Capacity and lengths of channels:
 
 ```go
 package main
@@ -470,7 +525,7 @@ func main() {
 
 ```
 
-17. WaitGroups struct types:
+18. WaitGroups struct types:
 
 ```go
 package main
@@ -502,7 +557,7 @@ func main() {
 }
 ```
 
-18. Basic worker pools:
+19. Basic worker pools:
 
 ```go
 // In this example we'll look at how to implement
@@ -542,7 +597,7 @@ func main() {
     }
 ```
 
-18. Worker Pools- step by step. FIRST- create two structs:
+20. Worker Pools- step by step. FIRST- create two structs:
 
 ```go
 type Job struct {  
@@ -568,14 +623,14 @@ Just make a new struct!
 */
 ```
 
-19. Now we're going to create our channels that will write to these structs. Remember how we stated that channels could be of __any type__? Well...
+21. Now we're going to create our channels that will write to these structs. Remember how we stated that channels could be of __any type__? Well...
 
 ```go
 var jobs = make(chan Job, 10)  
 var results = make(chan Result, 10)  
 ```
 
-20. Now we're going to create the function that actually **does** a thing. If you want to take the time to understand it- by all means! But really- this could be __literally anything__- from an abstraction point just consider that this is a function that does-a-thing:
+22. Now we're going to create the function that actually **does** a thing. If you want to take the time to understand it- by all means! But really- this could be __literally anything__- from an abstraction point just consider that this is a function that does-a-thing:
 
 ```go
 func digits(number int) int {  
@@ -591,7 +646,7 @@ func digits(number int) int {
 }
 ```
 
-21. NOW- back to this- let's write a function that creates a goRoutine. So what's going on here? 
+23. NOW- back to this- let's write a function that creates a goRoutine. So what's going on here? 
 
 ```go
 func worker(wg *sync.WaitGroup) {  
@@ -605,7 +660,7 @@ func worker(wg *sync.WaitGroup) {
 
 We're creating a WaitGroup....and saying: okay- the worker is going to take the waitgroup as an input, then range through all of the **jobs** in the **jobs** channel (defined above to be length 10). The output will be written to the **results** channel as type RESULT (the name of the struct). You see- **digits** is the task that the worker is __actually__ performing.
 
-22. The next thing we want to do is create a **worker pool** (that group of eager, waiting workers waiting for tasks):
+24. The next thing we want to do is create a **worker pool** (that group of eager, waiting workers waiting for tasks):
 
 ```go
 func createWorkerPool(noOfWorkers int) {  
@@ -621,7 +676,7 @@ func createWorkerPool(noOfWorkers int) {
 
 So what we're doing here is taking the number of workers that we want to create as a parameter. It will call on the workgroup to ADD 1 **before** creating the goRoutine to add to the waitgroup counter. Finally it calls **wg.Wait()** to allow all of the workers to be created. Once this is done it **closes** the results channel as nothing else will need to be written there.
 
-23. Okay! So we've craeted our worker pool. Now we need to allocate jobs to each of our workers:
+25. Okay! So we've craeted our worker pool. Now we need to allocate jobs to each of our workers:
 
 ```go
 func allocate(noOfJobs int) {  
@@ -636,7 +691,7 @@ func allocate(noOfJobs int) {
 
 SO- the **allocate** function takes the number of jobs we want to create as the input parameter and assigns a random number (up to 998). It then takes a job struct with the job number and random number and assigns it to the **jobs** channel...it then closes the jobs channel after assigning all jobs.
 
-24. Finally we want to create a **result** function that basically just prints the output from the **results** channel. To use this we're going to create a function that takes another channel with a BOOLEAN type in and writes to that:
+26. Finally we want to create a **result** function that basically just prints the output from the **results** channel. To use this we're going to create a function that takes another channel with a BOOLEAN type in and writes to that:
 
 ```go
 func result(done chan bool) {  
@@ -647,7 +702,7 @@ func result(done chan bool) {
 }
 ```
 
-25. Finally we are going to create our **main** function measuring time:
+27. Finally we are going to create our **main** function measuring time:
 
 ```go
 func main() {  
@@ -667,9 +722,9 @@ func main() {
 
 Okay- so we start the execution time and then calculate total time taken...then display. We set the number of jobs to 100 and allocate them. We then assign 10 workers to teh process, finish the process, and print out the time. Put all of these into your main package then run it. Check out the time!!
 
-26. NOW- switch from 10 to 20 workers. Run again and take a look at the time. What happened? 
+28. NOW- switch from 10 to 20 workers. Run again and take a look at the time. What happened? 
 
-27. Let's create a program with a race condition. **Please note here: you need to run this program on your local machine. Please DO NOT try to run this in the go playground as that is deterministic. Run locally!**
+29. Let's create a program with a race condition. **Please note here: you need to run this program on your local machine. Please DO NOT try to run this in the go playground as that is deterministic. Run locally!**
 
 ```go
 package main  
@@ -693,7 +748,7 @@ func main() {
 }
 ```
 
-28. Now let's fix the race condition using a mutex (imagine that "x" here is database and you want to make sure that you don't have multiple inserts and updates happening simultaneously):
+30. Now let's fix the race condition using a mutex (imagine that "x" here is database and you want to make sure that you don't have multiple inserts and updates happening simultaneously):
 
 ```go
 package main  
@@ -720,7 +775,7 @@ func main() {
 }
 ```
 
-29. Now let's look at how to solve this issue with a channel instead:
+31. Now let's look at how to solve this issue with a channel instead:
 
 ```go
 package main  
@@ -747,3 +802,121 @@ func main() {
     fmt.Println("final value of x", x)
 }
 ```
+
+32. Rate limiting in Golang example:
+
+```go
+// <em>[Rate limiting](http://en.wikipedia.org/wiki/Rate_limiting)</em>
+// is an important mechanism for controlling resource
+// utilization and maintaining quality of service. Go
+// elegantly supports rate limiting with goroutines,
+// channels, and [tickers](tickers).
+
+package main
+
+import "time"
+import "fmt"
+
+func main() {
+
+    // First we'll look at basic rate limiting. Suppose
+    // we want to limit our handling of incoming requests.
+    // We'll serve these requests off a channel of the
+    // same name.
+    requests := make(chan int, 5)
+    for i := 1; i <= 5; i++ {
+        requests <- i
+    }
+    close(requests)
+
+    // This `limiter` channel will receive a value
+    // every 200 milliseconds. This is the regulator in
+    // our rate limiting scheme.
+    limiter := time.Tick(200 * time.Millisecond)
+
+    // By blocking on a receive from the `limiter` channel
+    // before serving each request, we limit ourselves to
+    // 1 request every 200 milliseconds.
+    for req := range requests {
+        <-limiter
+        fmt.Println("request", req, time.Now())
+    }
+
+    // We may want to allow short bursts of requests in
+    // our rate limiting scheme while preserving the
+    // overall rate limit. We can accomplish this by
+    // buffering our limiter channel. This `burstyLimiter`
+    // channel will allow bursts of up to 3 events.
+    burstyLimiter := make(chan time.Time, 3)
+
+    // Fill up the channel to represent allowed bursting.
+    for i := 0; i < 3; i++ {
+        burstyLimiter <- time.Now()
+    }
+
+    // Every 200 milliseconds we'll try to add a new
+    // value to `burstyLimiter`, up to its limit of 3.
+    go func() {
+        for t := range time.Tick(200 * time.Millisecond) {
+            burstyLimiter <- t
+        }
+    }()
+
+    // Now simulate 5 more incoming requests. The first
+    // 3 of these will benefit from the burst capability
+    // of `burstyLimiter`.
+    burstyRequests := make(chan int, 5)
+    for i := 1; i <= 5; i++ {
+        burstyRequests <- i
+    }
+    close(burstyRequests)
+    for req := range burstyRequests {
+        <-burstyLimiter
+        fmt.Println("request", req, time.Now())
+    }
+}
+```
+
+33. Atomic counters in GO (instead of MUTEXES). What we're doing here is spinning up 100 go routines- each of which execute for a random number of iterations. At each new iteration they increment a shared int and then sleep for a microsecond. SO- each goroutine adds it's number of iterations to a shared counters...and as each iteration increments by ONE we would expect iterations to equal counters, right? Let's see what happens...
+
+```go
+    package main
+     
+    import (
+            "fmt"
+            "math/rand"
+            "sync"
+            "time"
+            "sync/atomic"
+    )
+     
+    var sharedint uint64
+    var sharedcount uint64
+    var wg sync.WaitGroup
+     
+    func readwrite(n int) {
+            defer wg.Done() // idiomatic way to indicate  we are done
+            iterations := rand.Int() % 1000 + 1000
+            atomic.AddUint64(&sharedcount, uint64(iterations))
+     
+            for i := 1; i <= iterations; i++ {
+                    sharedint++
+                    time.Sleep(time.Microsecond)
+            }
+    }
+     
+    func main() {
+            for i := 1; i <= 100; i++ {
+                    wg.Add(1)
+                    go readwrite(i)
+            }
+    		// Wait for all goroutines to finish
+            wg.Wait()
+            fmt.Println("value of shared int =", sharedint)
+            fmt.Println("value of shared count =", sharedcount)
+    }
+```
+
+So what happened here? Well- basically it's the normal race condition- BECAUSE nothing was locking the incremented variable while the goRoutines were working on it there were issues with multiple goRoutines hitting it at the same time. NOW- let's set an atomic counter:
+
+34. Replace the **sharedint++** variable above with this: `atomic.AddUint64(&sharedint,1)` and run again. How's it look now? 
