@@ -425,3 +425,105 @@ CMD ["./main"]
 50. So- add that dockerfile and then let's build the most minimal image (**alpine latest** is pretty much bare metal).  Let's run this thing: `docker run -td -p 8080:8080 secondstage` 
 
 51. Let's run a quick `docker ps -s` to see the size of the new container. I have a....pretty small container there running my webserver (oh yeah- and also- let's check to make sure that my binary is working- go to **localhost:8080**). Does Mad Max have anything to say to you?
+
+## Memoization and creating a cache
+
+52. Let's create a memoization caching layer here using reflect to speed up the returns on a (theoretically) slow program:
+
+```go
+package main
+
+import (
+    "errors"
+    "fmt"
+    "reflect"
+    "time"
+)
+
+func buildInStruct(ft reflect.Type) (reflect.Type, error) {
+    if ft.NumIn() == 0 {
+        return nil, errors.New("Must have at least one param")
+    }
+    var sf []reflect.StructField
+    for i := 0; i < ft.NumIn(); i++ {
+        ct := ft.In(i)
+        if !ct.Comparable() {
+            return nil, fmt.Errorf("parameter %d of type %s and kind %v is not comparable", i+1, ct.Name(), ct.Kind())
+        }
+        sf = append(sf, reflect.StructField{
+            Name: fmt.Sprintf("F%d", i),
+            Type: ct,
+        })
+    }
+    s := reflect.StructOf(sf)
+    return s, nil
+}
+
+type outExp struct {
+    out    []reflect.Value
+    expiry time.Time
+}
+
+func Cacher(f interface{}, expiration time.Duration) (interface{}, error) {
+    ft := reflect.TypeOf(f)
+    if ft.Kind() != reflect.Func {
+        return nil, errors.New("Only for functions")
+    }
+
+    inType, err := buildInStruct(ft)
+    if err != nil {
+        return nil, err
+    }
+
+    if ft.NumOut() == 0 {
+        return nil, errors.New("Must have at least one returned value")
+    }
+
+    m := map[interface{}]outExp{}
+    fv := reflect.ValueOf(f)
+    cacher := reflect.MakeFunc(ft, func(args []reflect.Value) []reflect.Value {
+        iv := reflect.New(inType).Elem()
+        for k, v := range args {
+            iv.Field(k).Set(v)
+        }
+        ivv := iv.Interface()
+        ov, ok := m[ivv]
+        now := time.Now()
+        if !ok || ov.expiry.Before(now) {
+            ov.out = fv.Call(args)
+            ov.expiry = now.Add(expiration)
+            m[ivv] = ov
+        }
+        return ov.out
+    })
+    return cacher.Interface(), nil
+}
+
+func AddSlowly(a, b int) int {
+    time.Sleep(100 * time.Millisecond)
+    return a + b
+}
+
+func main() {
+    ch, err := Cacher(AddSlowly, 2*time.Second)
+    if err != nil {
+        panic(err)
+    }
+    chAddSlowly := ch.(func(int, int) int)
+    for i := 0; i < 5; i++ {
+        start := time.Now()
+        result := chAddSlowly(1, 2)
+        end := time.Now()
+        fmt.Println("got result", result, "in", end.Sub(start))
+    }
+    time.Sleep(3 * time.Second)
+    start := time.Now()
+    result := chAddSlowly(1, 2)
+    end := time.Now()
+    fmt.Println("got result", result, "in", end.Sub(start))
+}
+
+
+```
+
+AND WE'RE DONE!!!!!
