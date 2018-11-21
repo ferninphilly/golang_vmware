@@ -595,6 +595,20 @@ func main() {
     for w := 1; w <= 3; w++ {
         go worker(w, jobs, results)
     }
+
+    // Here we send 5 `jobs` and then `close` that
+    // channel to indicate that's all the work we have.
+    for j := 1; j <= 5; j++ {
+        jobs <- j
+    }
+    close(jobs)
+
+    // Finally we collect all the results of the work.
+    for a := 1; a <= 5; a++ {
+        <-results
+    }
+}
+
 ```
 
 20. Worker Pools- step by step. FIRST- create two structs:
